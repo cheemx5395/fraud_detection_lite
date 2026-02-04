@@ -1,25 +1,23 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
   user: one
-  amount: 9.99
-  mode: MyString
-  risk_score: 1
-  triggered_factors: MyString
-  decision: MyString
-  amount_deviation_score: 1
-  frequency_deviation_score: 1
-  mode_deviation_score: 1
-  time_deviation_score: 1
+  amount: 500.0
+  mode: UPI
+  risk_score: 10
+  decision: ALLOW
+  triggered_factors: []
+  amount_deviation_score: 0
+  frequency_deviation_score: 0
+  mode_deviation_score: 10
+  time_deviation_score: 0
 
 two:
   user: two
-  amount: 9.99
-  mode: MyString
-  risk_score: 1
-  triggered_factors: MyString
-  decision: MyString
-  amount_deviation_score: 1
-  frequency_deviation_score: 1
-  mode_deviation_score: 1
-  time_deviation_score: 1
+  amount: 100.0
+  mode: UPI
+  risk_score: 5
+  decision: ALLOW
+  triggered_factors: []
+  amount_deviation_score: 0
+  frequency_deviation_score: 0
+  mode_deviation_score: 5
+  time_deviation_score: 0

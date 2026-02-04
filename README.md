@@ -32,14 +32,21 @@ Install the project dependencies using Bundler.
 bundle install
 ```
 
-#### 4. Setup the Database
+#### 4. Setup Environment Variables
+Copy the example environment file and update it with your database credentials if necessary.
+```bash
+cp .env.example .env
+```
+Open `.env` and fill in your `DATABASE_USERNAME` and `DATABASE_PASSWORD`.
+
+#### 5. Setup the Database
 Create the database and run the migrations.
 ```bash
 rails db:create
 rails db:migrate
 ```
 
-#### 5. Start the Application
+#### 6. Start the Application
 Boot up the Rails server.
 ```bash
 rails server

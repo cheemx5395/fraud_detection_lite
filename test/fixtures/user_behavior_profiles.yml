@@ -2,22 +2,22 @@
 
 one:
   user: one
-  average_transaction_amount: 9.99
-  max_transaction_amount_seen: 9.99
-  average_number_of_transactions_per_day: 1
-  registered_payment_modes: MyString
-  usual_transaction_start_hour: 2026-02-03 18:18:07
-  usual_transaction_end_hour: 2026-02-03 18:18:07
-  total_transactions: 1
-  allowed_transactions: 1
+  average_transaction_amount: 500.0
+  max_transaction_amount_seen: 1000.0
+  average_number_of_transactions_per_day: 5
+  registered_payment_modes: ["UPI", "CARD"]
+  usual_transaction_start_hour: 2000-01-01 09:00:00
+  usual_transaction_end_hour: 2000-01-01 18:00:00
+  total_transactions: 10
+  allowed_transactions: 10
 
 two:
   user: two
-  average_transaction_amount: 9.99
-  max_transaction_amount_seen: 9.99
-  average_number_of_transactions_per_day: 1
-  registered_payment_modes: MyString
-  usual_transaction_start_hour: 2026-02-03 18:18:07
-  usual_transaction_end_hour: 2026-02-03 18:18:07
-  total_transactions: 1
-  allowed_transactions: 1
+  average_transaction_amount: 100.0
+  max_transaction_amount_seen: 200.0
+  average_number_of_transactions_per_day: 2
+  registered_payment_modes: ["UPI"]
+  usual_transaction_start_hour: 2000-01-01 10:00:00
+  usual_transaction_end_hour: 2000-01-01 12:00:00
+  total_transactions: 5
+  allowed_transactions: 5
