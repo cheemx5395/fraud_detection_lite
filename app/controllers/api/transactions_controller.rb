@@ -53,7 +53,7 @@ class Api::TransactionsController < ApplicationController
 
       render json: {
         data: {
-          txn_id: transaction.id,
+          id: transaction.id,
           decision: transaction.decision,
           risk_score: transaction.risk_score,
           triggered_factors: transaction.triggered_factors
@@ -65,6 +65,33 @@ class Api::TransactionsController < ApplicationController
           message: transaction.errors.full_messages.join(", ")
         }
       }, status: :unprocessable_entity
+    end
+  end
+
+  def bulk
+    unless params[:file].present?
+      render json: { error: { message: "No file provided" } }, status: :bad_request
+      return
+    end
+
+    summary = BulkIngestionService.process(
+      current_user,
+      params[:file].path,
+      params[:file].original_filename
+    )
+
+    if summary[:errors].any? && summary[:processed_rows].zero?
+      render json: {
+        error: {
+          message: "Ingestion failed heavily",
+          details: summary[:errors].first(5)
+        }
+      }, status: :unprocessable_entity
+    else
+      render json: {
+        message: "Ingestion complete",
+        data: summary
+      }, status: :ok
     end
   end
 

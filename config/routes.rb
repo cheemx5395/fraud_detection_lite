@@ -17,7 +17,9 @@ Rails.application.routes.draw do
 
   # API routes
   namespace :api do
-    resources :transactions, only: [ :index, :show, :create ]
+    resources :transactions, only: [ :index, :show, :create ] do
+      post :bulk, on: :collection
+    end
   end
 
   # Health check

@@ -133,7 +133,7 @@ components:
         data:
           type: object
           properties:
-            txn_id:
+            id:
               type: integer
               example: 2
             decision:
@@ -324,3 +324,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TransactionDetailResponse'
+
+  /api/transactions/bulk:
+    post:
+      summary: Bulk Ingest Transactions
+      description: Upload a CSV or Excel file to synchronously ingest multiple transactions.
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV or Excel (.xls, .xlsx) file with columns [amount, mode, created_at]
+      responses:
+        '200':
+          description: Ingestion complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ingestion complete"
+                  data:
+                    type: object
+                    properties:
+                      total_rows:
+                        type: integer
+                        example: 100
+                      processed_rows:
+                        type: integer
+                        example: 95
+                      failed_rows:
+                        type: integer
+                        example: 5
+                      errors:
+                        type: array
+                        items:
+                          type: string
+                        example: ["Row 12: Invalid date format"]
+        '422':
+          description: Ingestion failed heavily
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

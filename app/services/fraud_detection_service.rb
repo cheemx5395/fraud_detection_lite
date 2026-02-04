@@ -55,8 +55,8 @@ class FraudDetectionService
   def calculate_amount_deviation
     mean = @profile.average_transaction_amount || @amount
 
-    # If this is the first transaction, no deviation
-    return 0 if @profile.total_transactions.zero?
+    # If this is the first transaction or amount is not above average, no deviation
+    return 0 if @profile.total_transactions.zero? || @amount <= mean
 
     # Calculate standard deviation from all user transactions
     transactions = @user.transactions.pluck(:amount)
