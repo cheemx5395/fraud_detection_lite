@@ -15,6 +15,11 @@ Rails.application.routes.draw do
     post "signup", to: "users/registrations#create"
   end
 
+  # API routes
+  namespace :api do
+    resources :transactions, only: [ :index, :show, :create ]
+  end
+
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
 end

@@ -66,6 +66,102 @@ components:
           type: string
           example: "Invalid email or password"
 
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        user_id:
+          type: integer
+          example: 8
+        amount:
+          type: number
+          format: float
+          example: 500.0
+        mode:
+          type: string
+          example: "UPI"
+        risk_score:
+          type: integer
+          example: 12
+        triggered_factors:
+          type: array
+          items:
+            type: string
+          example: ["NEW_MODE"]
+        decision:
+          type: string
+          example: "ALLOW"
+        amount_deviation_score:
+          type: integer
+          example: 0
+        frequency_deviation_score:
+          type: integer
+          example: 0
+        mode_deviation_score:
+          type: integer
+          example: 60
+        time_deviation_score:
+          type: integer
+          example: 0
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-02-04T05:14:42Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-02-04T05:14:42Z"
+
+    TransactionCreate:
+      type: object
+      required:
+        - amount
+        - mode
+      properties:
+        amount:
+          type: number
+          example: 500
+        mode:
+          type: string
+          example: "UPI"
+
+    TransactionCreateResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            txn_id:
+              type: integer
+              example: 2
+            decision:
+              type: string
+              example: "ALLOW"
+            risk_score:
+              type: integer
+              example: 12
+            triggered_factors:
+              type: array
+              items:
+                type: string
+              example: ["NEW_MODE"]
+
+    TransactionListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+
+    TransactionDetailResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Transaction'
+
 paths:
   /signup:
     post:
@@ -159,3 +255,72 @@ paths:
                   message:
                     type: string
                     example: "No active session"
+
+  /api/transactions:
+    post:
+      summary: Create Transaction
+      description: Create a new transaction and get fraud analysis
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreate'
+      responses:
+        '200':
+          description: Transaction Created and Analyzed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionCreateResponse'
+    get:
+      summary: List Transactions
+      description: Get a list of transactions for the authenticated user
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionListResponse'
+
+  /api/transactions/{id}:
+    get:
+      summary: Get Single Transaction
+      description: Get detailed information for a specific transaction
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDetailResponse'
