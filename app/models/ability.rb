@@ -30,7 +30,7 @@ class Ability
     # https://github.com/CanCanCommunity/cancancan/blob/develop/docs/define_check_abilities.md
 
     user ||= User.new # guest user (not logged in)
-    
+
     if user.persisted?
       # Logged in users can manage their own transactions
       can :manage, Transaction, user_id: user.id

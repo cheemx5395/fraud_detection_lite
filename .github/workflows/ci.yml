@@ -59,9 +59,14 @@ jobs:
 
       - name: Start Postgres
         run: |
-          sudo service postgresql start
+          sudo systemctl start postgresql
+          # Wait for postgres to be ready
+          until pg_isready; do
+            echo "Waiting for PostgreSQL..."
+            sleep 1
+          done
           sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-          sudo -u postgres psql -c "CREATE DATABASE fraud_detection_lite_test;"
+          sudo -u postgres psql -c "CREATE DATABASE fraud_detection_lite_test;" || true
 
       - name: Checkout code
         uses: actions/checkout@v6
