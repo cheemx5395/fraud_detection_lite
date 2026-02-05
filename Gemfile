@@ -50,6 +50,8 @@ group :development, :test do
 
   gem "sqlite3"
   gem "dotenv-rails"
+  gem "simplecov", require: false
+  gem "simplecov-console", require: false
 end
 
 gem "devise", "~> 5.0"
