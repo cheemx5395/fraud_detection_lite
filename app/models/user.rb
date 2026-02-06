@@ -9,7 +9,8 @@ class User < ApplicationRecord
     {
       "userid" => id,
       "name" => name,
-      "email" => email
+      "email" => email,
+      "jti" => jti
     }
   end
 

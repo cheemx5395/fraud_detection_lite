@@ -25,14 +25,11 @@ class Users::SessionsController < Devise::SessionsController
 
   def destroy
     unless current_user
-      render json: {
-        message: "No active session"
-      }, status: :unauthorized
+      render json: { error: "No active session" }, status: :unauthorized
       return
     end
 
     # JWT revocation is handled automatically by warden-jwt_auth middleware
-    # when the DELETE request hits the revocation_requests path
     render json: {
       message: "Logged out successfully"
     }, status: :ok
