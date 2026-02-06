@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   namespace :api do
     resources :transactions, only: [ :index, :show, :create ] do
       post :bulk, on: :collection
+      get :summary, on: :collection
     end
   end
 

@@ -8,4 +8,8 @@ class ApplicationController < ActionController::API
   rescue_from JWT::DecodeError, JWT::ExpiredSignature do |exception|
     render json: { error: "Invalid or expired token" }, status: :unauthorized
   end
+
+  rescue_from ActiveRecord::RangeError do |exception|
+    render json: { error: "Numeric value out of range" }, status: :bad_request
+  end
 end

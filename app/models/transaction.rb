@@ -8,7 +8,7 @@ class Transaction < ApplicationRecord
 
   # Validations
   validates :user_id, presence: true
-  validates :amount, presence: true, numericality: { greater_than: 0 }
+  validates :amount, presence: true, numericality: { greater_than: 0, less_than: 10**13 }
   validates :mode, presence: true, inclusion: { in: PAYMENT_MODES }
   validates :risk_score, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
   validates :decision, presence: true, inclusion: { in: DECISIONS }

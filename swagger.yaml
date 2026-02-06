@@ -162,6 +162,38 @@ components:
         data:
           $ref: '#/components/schemas/Transaction'
 
+    TransactionSummaryResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            total_transactions:
+              type: integer
+              example: 3
+            allowed_transactions:
+              type: integer
+              example: 3
+            flagged_transactions:
+              type: integer
+              example: 0
+            blocked_transactions:
+              type: integer
+              example: 0
+            triggered_factors_breakdown:
+              type: object
+              additionalProperties:
+                type: integer
+              example:
+                NEW_MODE: 2
+                FREQUENCY_SPIKE: 1
+            recent_daily_activity:
+              type: object
+              additionalProperties:
+                type: integer
+              example:
+                "2026-02-06": 3
+
 paths:
   /signup:
     post:
@@ -374,6 +406,28 @@ paths:
                         example: ["Row 12: Invalid date format"]
         '422':
           description: Ingestion failed heavily
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/transactions/summary:
+    get:
+      summary: Get Transaction Summary
+      description: Get a summary of all transactions for the authenticated user
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Transaction summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionSummaryResponse'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:

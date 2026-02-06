@@ -22,6 +22,34 @@ class Api::TransactionsController < ApplicationController
     }, status: :ok
   end
 
+  def summary
+    transactions = current_user.transactions
+
+    summary_data = {
+      total_transactions: transactions.count,
+      allowed_transactions: transactions.allowed.count,
+      flagged_transactions: transactions.flagged.count,
+      blocked_transactions: transactions.blocked.count,
+      triggered_factors_breakdown: transactions.pluck(:triggered_factors).flatten.compact.tally
+    }
+
+    # Recent activity - use a more robust way to handle dates
+    begin
+      recent_activity = transactions.where("created_at > ?", 7.days.ago)
+                                    .group("created_at::date")
+                                    .count
+                                    .transform_keys(&:to_s)
+      summary_data[:recent_daily_activity] = recent_activity
+    rescue => e
+      Rails.logger.error "Summary API Date Error: #{e.message}"
+      # Fallback to Ruby-side grouping if SQL fails
+      recent_data = transactions.where("created_at > ?", 7.days.ago).pluck(:created_at)
+      summary_data[:recent_daily_activity] = recent_data.map(&:to_date).tally.transform_keys(&:to_s)
+    end
+
+    render json: { data: summary_data }, status: :ok
+  end
+
   def create
     # Get or initialize user behavior profile
     profile = current_user.user_behavior_profile || current_user.create_user_behavior_profile
