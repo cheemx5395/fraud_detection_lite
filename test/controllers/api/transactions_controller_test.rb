@@ -40,6 +40,16 @@ class Api::TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test "should reject string amount" do
+    post api_transactions_url,
+         params: { amount: "500", mode: "UPI" },
+         headers: @headers,
+         as: :json
+    assert_response :bad_request
+    json_response = JSON.parse(response.body)
+    assert_includes json_response["error"]["message"], "Amount must be a numeric value"
+  end
+
   test "should handle bulk ingestion" do
     csv_content = "amount,mode,created_at\n100,UPI,2026-01-01 10:00:00"
     file = fixture_file_upload(Tempfile.new([ "test", ".csv" ]).tap { |f| f.write(csv_content); f.rewind }.path, "text/csv")

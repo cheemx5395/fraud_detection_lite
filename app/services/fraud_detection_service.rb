@@ -58,14 +58,13 @@ class FraudDetectionService
     # If this is the first transaction or amount is not above average, no deviation
     return 0 if @profile.total_transactions.zero? || @amount <= mean
 
-    # Calculate standard deviation from all user transactions
-    transactions = @user.transactions.pluck(:amount)
-    return 0 if transactions.empty?
+    # Calculate standard deviation from all user transactions using SQL
+    # Note: STDDEV_SAMP is standard for sample deviation in PostgreSQL
+    stats = @user.transactions.pick(Arel.sql("STDDEV_SAMP(amount)"))
+    std_dev = stats.to_f
 
-    std_dev = calculate_standard_deviation(transactions, mean)
-
-    # If std_dev is 0 (all transactions same amount), use a default
-    std_dev = mean * 0.1 if std_dev.zero?
+    # If std_dev is 0 or nil (less than 2 transactions or all same amount), use a default
+    std_dev = mean * 0.1 if std_dev.zero? || std_dev.nil?
 
     # Calculate z-score
     z_score = ((@amount - mean) / std_dev).abs
@@ -153,13 +152,6 @@ class FraudDetectionService
       @triggered_factors << "TIME_ANOMALY" if score > 50
       score
     end
-  end
-
-  def calculate_standard_deviation(values, mean)
-    return 0 if values.empty?
-
-    variance = values.sum { |v| (v.to_f - mean) ** 2 } / values.size.to_f
-    Math.sqrt(variance)
   end
 
   def determine_decision(risk_score)

@@ -19,11 +19,11 @@ class ProfileRenewalJob < ApplicationJob
     profile.total_transactions = user.transactions.count
     profile.allowed_transactions = transactions.count
 
-    amounts = transactions.pluck(:amount)
-    profile.average_transaction_amount = amounts.sum / amounts.size.to_f
-    profile.max_transaction_amount_seen = amounts.max
+    # Use SQL aggregations to avoid loading all amounts into memory
+    profile.average_transaction_amount = transactions.average(:amount) || 0
+    profile.max_transaction_amount_seen = transactions.maximum(:amount) || 0
 
-    profile.registered_payment_modes = transactions.pluck(:mode).uniq
+    profile.registered_payment_modes = transactions.unscope(:order).distinct.pluck(:mode)
 
     profile.usual_transaction_start_hour = transactions.minimum(:created_at)
     profile.usual_transaction_end_hour = transactions.maximum(:created_at)

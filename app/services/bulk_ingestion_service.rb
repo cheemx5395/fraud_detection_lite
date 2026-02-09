@@ -16,8 +16,18 @@ class BulkIngestionService
     }
   end
 
+  MAX_ROWS = 5000
+  BATCH_SIZE = 50
+
   def process
     spreadsheet = open_spreadsheet
+    total_rows = spreadsheet.last_row - 1
+
+    if total_rows > MAX_ROWS
+      @summary[:errors] << "File too large: #{total_rows} rows (Max: #{MAX_ROWS})"
+      return @summary
+    end
+
     header = spreadsheet.row(1).map(&:to_s).map(&:strip).map(&:downcase)
 
     # Expected headers: amount, mode, created_at
@@ -30,39 +40,43 @@ class BulkIngestionService
       return @summary
     end
 
-    Transaction.transaction do
-      (2..spreadsheet.last_row).each do |i|
-        @summary[:total_rows] += 1
-        row = spreadsheet.row(i)
+    (2..spreadsheet.last_row).each_slice(BATCH_SIZE) do |batch|
+      Transaction.transaction do
+        batch.each do |i|
+          @summary[:total_rows] += 1
+          row = spreadsheet.row(i)
 
-        # Skip empty rows
-        next if row.all?(&:blank?)
+          # Skip empty rows
+          next if row.all?(&:blank?)
 
-        begin
-          transaction_data = {
-            amount: row[amount_idx],
-            mode: row[mode_idx],
-            created_at: parse_time(row[created_at_idx])
-          }
+          begin
+            transaction_data = {
+              amount: row[amount_idx],
+              mode: row[mode_idx],
+              created_at: parse_time(row[created_at_idx])
+            }
 
-          process_row(transaction_data)
-          @summary[:processed_rows] += 1
+            process_row(transaction_data)
+            @summary[:processed_rows] += 1
 
-          # Update profile every 10 rows to keep analysis fresh but reduce DB load
-          if @summary[:processed_rows] % 10 == 0
-            ProfileUpdateService.recalibrate(@profile)
-            @profile.reload
+            # Update profile every 10 rows to keep analysis fresh but reduce DB load
+            if @summary[:processed_rows] % 10 == 0
+              ProfileUpdateService.recalibrate(@profile)
+              @profile.reload
+            end
+
+          rescue => e
+            @summary[:failed_rows] += 1
+            @summary[:errors] << "Row #{i}: #{e.message}"
+            # Row error doesn't roll back the whole batch in this design,
+            # but if we wanted to, we could raise here.
           end
-
-        rescue => e
-          @summary[:failed_rows] += 1
-          @summary[:errors] << "Row #{i}: #{e.message}"
         end
-      end
-
-      # Final recalibration if not already done on last batch
-      ProfileUpdateService.recalibrate(@profile) if @summary[:processed_rows] % 10 != 0
+      end # End of batch transaction
     end
+
+    # Final recalibration
+    ProfileUpdateService.recalibrate(@profile)
 
     @summary
   end

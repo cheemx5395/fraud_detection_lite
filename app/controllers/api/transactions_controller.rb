@@ -30,7 +30,11 @@ class Api::TransactionsController < ApplicationController
       allowed_transactions: transactions.allowed.count,
       flagged_transactions: transactions.flagged.count,
       blocked_transactions: transactions.blocked.count,
-      triggered_factors_breakdown: transactions.pluck(:triggered_factors).flatten.compact.tally
+      triggered_factors_breakdown: Transaction.from(
+                                                current_user.transactions.unscope(:order)
+                                                            .select("unnest(triggered_factors) AS factor"),
+                                                :t
+                                              ).group(:factor).count
     }
 
     # Recent activity - use a more robust way to handle dates
@@ -51,9 +55,20 @@ class Api::TransactionsController < ApplicationController
   end
 
   def create
+    # Strict type validation for amount - only accept Numeric (Integer, Float, Decimal)
+    # Reject strings even if they contain numbers to prevent abrupt failure/unexpected behavior
+    amount_param = params[:amount]
+    unless amount_param.is_a?(Numeric)
+      render json: {
+        error: {
+          message: "Amount must be a numeric value (provided #{amount_param.class})"
+        }
+      }, status: :bad_request
+      return
+    end
+
     # Get or initialize user behavior profile
     profile = current_user.user_behavior_profile || current_user.create_user_behavior_profile
-
     # Calculate fraud scores
     fraud_analysis = FraudDetectionService.analyze(
       user: current_user,
